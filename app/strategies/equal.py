@@ -13,9 +13,7 @@ class EqualSplitStrategy(SplitStrategy):
             raise InvalidSplitError("Participants must be unique")
         self._participant_ids = participant_ids
 
-    def split(self, total: Decimal) -> dict[int, Decimal]:
-        if total <= 0:
-            raise InvalidSplitError("Total must be positive")
+    def _calculate(self, total: Decimal) -> dict[int, Decimal]:
         base_cents, remainder = divmod(to_cents(total), len(self._participant_ids))
         return {
             participant_id: from_cents(base_cents + (1 if index < remainder else 0))
