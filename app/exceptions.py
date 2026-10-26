@@ -1,0 +1,2 @@
+class InvalidSplitError(ValueError):
+    pass
