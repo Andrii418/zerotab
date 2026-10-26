@@ -12,7 +12,7 @@ class PercentageSplitStrategy(SplitStrategy):
             raise InvalidSplitError("At least one participant is required")
         if any(percentage <= 0 for percentage in percentages.values()):
             raise InvalidSplitError("Percentages must be positive")
-        if sum(percentages.values()) != Decimal("100"):
+        if sum(percentages.values()) != Decimal(100):
             raise InvalidSplitError("Percentages must sum to 100")
         self._percentages = percentages
 

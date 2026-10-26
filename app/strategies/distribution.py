@@ -1,4 +1,4 @@
-from decimal import Decimal, ROUND_FLOOR
+from decimal import ROUND_FLOOR, Decimal
 
 
 def distribute_cents(total_cents: int, weights: dict[int, Decimal]) -> dict[int, int]:
