@@ -1,6 +1,18 @@
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 
-app = FastAPI(title="ZeroTab")
+from app.database import init_database
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    init_database()
+    yield
+
+
+app = FastAPI(title="ZeroTab", lifespan=lifespan)
 
 
 @app.get("/health")
