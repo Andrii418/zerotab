@@ -4,3 +4,11 @@ class InvalidSplitError(ValueError):
 
 class InvalidBalancesError(ValueError):
     pass
+
+
+class InvalidExpenseError(ValueError):
+    pass
+
+
+class EntityNotFoundError(LookupError):
+    pass
