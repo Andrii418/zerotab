@@ -10,6 +10,7 @@ from app.repositories.person_repository import PersonRepository
 from app.services.expense_service import ExpenseService
 from app.services.group_service import GroupService
 from app.services.settlement_service import SettlementService
+from app.web.group_page import GroupPage
 
 SessionDep = Annotated[Session, Depends(get_session)]
 
@@ -34,3 +35,14 @@ PersonRepositoryDep = Annotated[PersonRepository, Depends(get_person_repository)
 GroupServiceDep = Annotated[GroupService, Depends(get_group_service)]
 ExpenseServiceDep = Annotated[ExpenseService, Depends(get_expense_service)]
 SettlementServiceDep = Annotated[SettlementService, Depends(get_settlement_service)]
+
+def get_group_page(
+    groups: GroupServiceDep,
+    expenses: ExpenseServiceDep,
+    settlement: SettlementServiceDep,
+    people: PersonRepositoryDep,
+) -> GroupPage:
+    return GroupPage(groups, expenses, settlement, people)
+
+
+GroupPageDep = Annotated[GroupPage, Depends(get_group_page)]
