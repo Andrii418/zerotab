@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Your groups</h1>
+
+<section class="card">
+  {% if groups %}
+  <ul class="group-list">
+    {% for group in groups %}
+    <li>
+      <a href="/ui/groups/{{ group.id }}">{{ group.name }}</a>
+      <span class="muted">· {{ group.members|length }} members</span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">No groups yet. Add people, then create the first group below.</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>People</h2>
+  <form method="post" action="/ui/people" class="inline-form">
+    <input name="name" placeholder="Name" required maxlength="100" aria-label="Person name">
+    <button type="submit">Add person</button>
+  </form>
+  <ul class="chips">
+    {% for person in people %}<li>{{ person.name }}</li>{% endfor %}
+  </ul>
+</section>
+
+<section class="card">
+  <h2>New group</h2>
+  {% if people %}
+  <form method="post" action="/ui/groups" class="stack">
+    <label>Group name
+      <input name="name" required maxlength="100">
+    </label>
+    <fieldset>
+      <legend>Members</legend>
+      {% for person in people %}
+      <div class="participant">
+        <label><input type="checkbox" name="member_ids" value="{{ person.id }}"> {{ person.name }}</label>
+      </div>
+      {% endfor %}
+    </fieldset>
+    <button type="submit">Create group</button>
+  </form>
+  {% else %}
+  <p class="muted">Add at least one person first.</p>
+  {% endif %}
+</section>
+{% endblock %}
