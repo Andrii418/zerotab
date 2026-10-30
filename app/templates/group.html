@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}{{ group.name }} – ZeroTab{% endblock %}
+
+{% block content %}
+<p><a href="/ui">← All groups</a></p>
+<h1>{{ group.name }}</h1>
+
+<section class="card">
+  <h2>Members</h2>
+  <ul class="chips">
+    {% for member in group.members %}<li>{{ member.name }}</li>{% endfor %}
+  </ul>
+  {% if available_people %}
+  <form method="post" action="/ui/groups/{{ group.id }}/members" class="inline-form">
+    <select name="person_id" aria-label="Person to add">
+      {% for person in available_people %}<option value="{{ person.id }}">{{ person.name }}</option>{% endfor %}
+    </select>
+    <button type="submit">Add member</button>
+  </form>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Add expense</h2>
+  {% if group.members %}
+  <form method="post" action="/ui/groups/{{ group.id }}/expenses" class="stack">
+    <label>Description
+      <input name="description" required maxlength="200">
+    </label>
+    <label>Category
+      <input name="category" value="other" maxlength="50">
+    </label>
+    <label>Amount (PLN)
+      <input name="amount" inputmode="decimal" required placeholder="0.00">
+    </label>
+    <label>Paid by
+      <select name="payer_id">
+        {% for member in group.members %}<option value="{{ member.id }}">{{ member.name }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Split type
+      <select name="split_type" id="split_type">
+        {% for split_type in split_types %}<option value="{{ split_type.value }}">{{ split_type.value|capitalize }}</option>{% endfor %}
+      </select>
+    </label>
+    <fieldset>
+      <legend>Participants</legend>
+      {% for member in group.members %}
+      <div class="participant">
+        <label><input type="checkbox" name="participants" value="{{ member.id }}" checked> {{ member.name }}</label>
+        <input class="share-input" name="share_{{ member.id }}" inputmode="decimal" aria-label="Share for {{ member.name }}">
+      </div>
+      {% endfor %}
+    </fieldset>
+    <p class="hint" id="split-hint"></p>
+    <button type="submit">Add expense</button>
+  </form>
+  {% else %}
+  <p class="muted">Add members to the group before adding expenses.</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Expenses</h2>
+  {% if expenses %}
+  <table>
+    <thead>
+      <tr><th>Date</th><th>Description</th><th>Category</th><th>Paid by</th><th>Split</th><th class="amount">Amount</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for expense in expenses %}
+      <tr>
+        <td>{{ expense.created_at.strftime('%Y-%m-%d') }}</td>
+        <td>{{ expense.description }}</td>
+        <td>{{ expense.category }}</td>
+        <td>{{ expense.payer.name }}</td>
+        <td class="muted">{% for share in expense.shares %}{{ share.person.name }} {{ share.amount }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
+        <td class="amount">{{ expense.amount }} PLN</td>
+        <td>
+          <form method="post" action="/ui/groups/{{ group.id }}/expenses/{{ expense.id }}/delete" onsubmit="return confirm('Delete this expense?')">
+            <button type="submit" class="danger">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">No expenses yet.</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Balances</h2>
+  <table>
+    <tbody>
+      {% for row in balances %}
+      <tr>
+        <td>{{ row.person_name }}</td>
+        <td class="amount {% if row.amount > 0 %}positive{% elif row.amount < 0 %}negative{% endif %}">{{ row.amount }} PLN</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="hint">Positive: the group owes this person. Negative: this person owes the group.</p>
+</section>
+
+<section class="card">
+  <h2>Settlement</h2>
+  {% if transfers %}
+  <ul>
+    {% for transfer in transfers %}
+    <li><strong>{{ transfer.payer_name }}</strong> pays <strong>{{ transfer.receiver_name }}</strong> {{ transfer.amount }} PLN</li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">All settled up.</p>
+  {% endif %}
+</section>
+
+<form method="post" action="/ui/groups/{{ group.id }}/delete" onsubmit="return confirm('Delete this group and all its expenses?')">
+  <button type="submit" class="danger">Delete group</button>
+</form>
+{% endblock %}
+
+{% block scripts %}<script src="/static/expense-form.js"></script>{% endblock %}

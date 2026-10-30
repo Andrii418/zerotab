@@ -3,7 +3,12 @@ from typing import Annotated
 from fastapi import APIRouter, Form, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 
-from app.dependencies import GroupServiceDep, PersonRepositoryDep
+from app.dependencies import (
+    ExpenseServiceDep,
+    GroupPageDep,
+    GroupServiceDep,
+    PersonRepositoryDep,
+)
 from app.exceptions import (
     EntityNotFoundError,
     InvalidBalancesError,
@@ -12,6 +17,7 @@ from app.exceptions import (
 )
 from app.repositories.person_repository import PersonRepository
 from app.services.group_service import GroupService
+from app.web.form_parser import parse_expense_form
 from app.web.templating import templates
 
 router = APIRouter(prefix="/ui", include_in_schema=False)
@@ -71,3 +77,50 @@ def create_group(
     except DOMAIN_ERRORS as error:
         return render_index(request, people, groups, error=str(error))
     return redirect(f"/ui/groups/{group.id}")
+
+
+@router.get("/groups/{group_id}", response_class=HTMLResponse)
+def group_detail(request: Request, group_id: int, page: GroupPageDep) -> HTMLResponse:
+    return page.render(request, group_id)
+
+
+@router.post("/groups/{group_id}/members")
+def add_member(
+    request: Request,
+    group_id: int,
+    person_id: Annotated[int, Form()],
+    groups: GroupServiceDep,
+    page: GroupPageDep,
+) -> Response:
+    try:
+        groups.add_member(group_id, person_id)
+    except DOMAIN_ERRORS as error:
+        return page.render(request, group_id, error=str(error))
+    return redirect(f"/ui/groups/{group_id}")
+
+
+@router.post("/groups/{group_id}/expenses")
+async def add_expense(
+    request: Request,
+    group_id: int,
+    expenses: ExpenseServiceDep,
+    page: GroupPageDep,
+) -> Response:
+    form = await request.form()
+    try:
+        expenses.add_expense(group_id=group_id, **parse_expense_form(form))
+    except DOMAIN_ERRORS as error:
+        return page.render(request, group_id, error=str(error))
+    return redirect(f"/ui/groups/{group_id}")
+
+
+@router.post("/groups/{group_id}/expenses/{expense_id}/delete")
+def delete_expense(group_id: int, expense_id: int, expenses: ExpenseServiceDep) -> Response:
+    expenses.delete_expense(expense_id)
+    return redirect(f"/ui/groups/{group_id}")
+
+
+@router.post("/groups/{group_id}/delete")
+def delete_group(group_id: int, groups: GroupServiceDep) -> Response:
+    groups.delete_group(group_id)
+    return redirect("/ui")
