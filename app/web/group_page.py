@@ -35,5 +35,5 @@ class GroupPage:
             "split_types": list(SplitType),
             "error": error,
         }
-        status_code = status.HTTP_422_UNPROCESSABLE_ENTITY if error else status.HTTP_200_OK
+        status_code = status.HTTP_422_UNPROCESSABLE_CONTENT if error else status.HTTP_200_OK
         return templates.TemplateResponse(request, "group.html", context, status_code=status_code)

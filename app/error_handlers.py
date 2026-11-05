@@ -22,4 +22,4 @@ def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(InvalidExpenseError)
     @app.exception_handler(InvalidBalancesError)
     async def handle_invalid_input(_: Request, error: Exception) -> JSONResponse:
-        return _json_error(status.HTTP_422_UNPROCESSABLE_ENTITY, error)
+        return _json_error(status.HTTP_422_UNPROCESSABLE_CONTENT, error)
