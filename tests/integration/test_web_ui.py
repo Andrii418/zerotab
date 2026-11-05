@@ -256,3 +256,13 @@ def test_delete_group_form_removes_group(client, seeded_group):
     assert response.status_code == 303
     assert response.headers["location"] == "/ui"
     assert client.get(f"/groups/{seeded_group.group_id}").status_code == 404
+
+def test_add_member_form_returns_404_for_unknown_group(client):
+    # Arrange
+    dave_id = create_person(client, "Dave")
+
+    # Act
+    response = client.post("/ui/groups/999/members", data={"person_id": str(dave_id)})
+
+    # Assert
+    assert response.status_code == 404

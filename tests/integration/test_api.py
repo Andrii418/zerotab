@@ -357,3 +357,14 @@ def test_settlement_endpoint_returns_404_for_unknown_group(client):
 
     # Assert
     assert response.status_code == 404
+
+def test_list_groups_returns_created_groups(client, seeded_group):
+    # Arrange
+    url = "/groups"
+
+    # Act
+    response = client.get(url)
+
+    # Assert
+    assert response.status_code == 200
+    assert [group["name"] for group in response.json()] == ["Trip"]
