@@ -85,7 +85,7 @@ pytest --cov=app --cov-report=term-missing
 pytest --cov=app --cov-report=html
 ```
 
-Wynik: **169 testów, pokrycie kodu 98%**. Wszystkie testy są napisane w konwencji AAA (Arrange-Act-Assert).
+Wynik: **171 testów, pokrycie kodu 99%**. Wszystkie testy są napisane w konwencji AAA (Arrange-Act-Assert).
 
 ### Testy jednostkowe (114)
 
@@ -107,7 +107,7 @@ Katalog: [`tests/unit`](tests/unit)
 | [test_form_parser.py](tests/unit/test_form_parser.py) | parsowanie formularza wydatku |
 | [test_presenters.py](tests/unit/test_presenters.py) | zamiana sald i przelewów na wiersze widoku |
 
-### Testy integracyjne (55)
+### Testy integracyjne (57)
 
 Katalog: [`tests/integration`](tests/integration). Testy używają prawdziwej bazy SQLite w pamięci (osobnej dla każdego testu) i klienta HTTP `TestClient`. Konfiguracja: [conftest.py](tests/integration/conftest.py).
 
