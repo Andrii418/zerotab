@@ -187,3 +187,9 @@ Pełne przypadki testowe dla testera manualnego (ID, tytuł, warunki początkowe
 - pytest, pytest-cov, `unittest.mock` i `TestClient` (testy)
 - Ruff (linter i porządek importów)
 - Git i GitHub (kontrola wersji)
+
+### Zrzuty ekranu
+
+![Strona główna](docs/screenshots/index.png)
+![Strona grupy](docs/screenshots/group.png)
+![Dokumentacja API](docs/screenshots/swagger.png)
