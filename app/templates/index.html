@@ -1,53 +1,76 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Your groups</h1>
-
-<section class="card">
-  {% if groups %}
-  <ul class="group-list">
-    {% for group in groups %}
-    <li>
-      <a href="/ui/groups/{{ group.id }}">{{ group.name }}</a>
-      <span class="muted">· {{ group.members|length }} members</span>
-    </li>
-    {% endfor %}
-  </ul>
-  {% else %}
-  <p class="muted">No groups yet. Add people, then create the first group below.</p>
-  {% endif %}
+<section class="hero reveal">
+  <div>
+    <h1 class="gradient-text">Your groups</h1>
+    <p>Track who paid for what, split it fairly and settle up with the fewest transfers.</p>
+  </div>
 </section>
 
-<section class="card">
-  <h2>People</h2>
-  <form method="post" action="/ui/people" class="inline-form">
-    <input name="name" placeholder="Name" required maxlength="100" aria-label="Person name">
-    <button type="submit">Add person</button>
-  </form>
-  <ul class="chips">
-    {% for person in people %}<li>{{ person.name }}</li>{% endfor %}
-  </ul>
+{% if groups %}
+<div class="group-grid">
+  {% for group in groups %}
+  <a class="group-card reveal" href="/ui/groups/{{ group.id }}">
+    <strong>{{ group.name }}</strong>
+    <div class="meta">
+      <span class="avatar-stack">
+        {% for member in group.members[:4] %}
+        <span class="avatar sm" data-avatar="{{ member.name }}">{{ member.name[:1]|upper }}</span>
+        {% endfor %}
+      </span>
+      <span class="muted">{{ group.members|length }} members</span>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<section class="card reveal">
+  <div class="empty">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 20h5v-2a4 4 0 0 0-3-3.87M9 20H4v-2a4 4 0 0 1 3-3.87M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M17 8.5a3 3 0 0 1 0 5.5M7 8.5a3 3 0 0 0 0 5.5" opacity=".5"/></svg>
+    <strong>No groups yet</strong>
+    <span class="muted">Add people, then create the first group below.</span>
+  </div>
 </section>
+{% endif %}
 
-<section class="card">
-  <h2>New group</h2>
-  {% if people %}
-  <form method="post" action="/ui/groups" class="stack">
-    <label>Group name
-      <input name="name" required maxlength="100">
-    </label>
-    <fieldset>
-      <legend>Members</legend>
+<div class="layout">
+  <section class="card reveal">
+    <h2>New group</h2>
+    {% if people %}
+    <form method="post" action="/ui/groups" class="stack">
+      <label>Group name
+        <input name="name" required maxlength="100" placeholder="e.g. Weekend in the mountains">
+      </label>
+      <fieldset>
+        <legend>Members</legend>
+        <div class="pill-grid">
+          {% for person in people %}
+          <label class="pill">
+            <input type="checkbox" name="member_ids" value="{{ person.id }}">
+            <span>{{ person.name }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </fieldset>
+      <button type="submit" class="btn">Create group</button>
+    </form>
+    {% else %}
+    <p class="muted">Add at least one person first.</p>
+    {% endif %}
+  </section>
+
+  <section class="card reveal">
+    <h2>People</h2>
+    <form method="post" action="/ui/people" class="inline-form">
+      <input name="name" placeholder="Name" required maxlength="100" aria-label="Person name">
+      <button type="submit" class="btn">Add person</button>
+    </form>
+    <ul class="chips" style="margin-top: 1rem;">
       {% for person in people %}
-      <div class="participant">
-        <label><input type="checkbox" name="member_ids" value="{{ person.id }}"> {{ person.name }}</label>
-      </div>
+      <li class="chip"><span class="avatar sm" data-avatar="{{ person.name }}">{{ person.name[:1]|upper }}</span>{{ person.name }}</li>
       {% endfor %}
-    </fieldset>
-    <button type="submit">Create group</button>
-  </form>
-  {% else %}
-  <p class="muted">Add at least one person first.</p>
-  {% endif %}
-</section>
+    </ul>
+  </section>
+</div>
 {% endblock %}
