@@ -3,125 +3,160 @@
 {% block title %}{{ group.name }} – ZeroTab{% endblock %}
 
 {% block content %}
-<p><a href="/ui">← All groups</a></p>
-<h1>{{ group.name }}</h1>
+{% set total_spent = expenses|sum(attribute='amount') %}
 
-<section class="card">
-  <h2>Members</h2>
-  <ul class="chips">
-    {% for member in group.members %}<li>{{ member.name }}</li>{% endfor %}
-  </ul>
-  {% if available_people %}
-  <form method="post" action="/ui/groups/{{ group.id }}/members" class="inline-form">
-    <select name="person_id" aria-label="Person to add">
-      {% for person in available_people %}<option value="{{ person.id }}">{{ person.name }}</option>{% endfor %}
-    </select>
-    <button type="submit">Add member</button>
-  </form>
-  {% endif %}
-</section>
+<a class="back-link" href="/ui">← All groups</a>
+<h1 class="reveal">{{ group.name }}</h1>
 
-<section class="card">
-  <h2>Add expense</h2>
-  {% if group.members %}
-  <form method="post" action="/ui/groups/{{ group.id }}/expenses" class="stack">
-    <label>Description
-      <input name="description" required maxlength="200">
-    </label>
-    <label>Category
-      <input name="category" value="other" maxlength="50">
-    </label>
-    <label>Amount (PLN)
-      <input name="amount" inputmode="decimal" required placeholder="0.00">
-    </label>
-    <label>Paid by
-      <select name="payer_id">
-        {% for member in group.members %}<option value="{{ member.id }}">{{ member.name }}</option>{% endfor %}
-      </select>
-    </label>
-    <label>Split type
-      <select name="split_type" id="split_type">
-        {% for split_type in split_types %}<option value="{{ split_type.value }}">{{ split_type.value|capitalize }}</option>{% endfor %}
-      </select>
-    </label>
-    <fieldset>
-      <legend>Participants</legend>
-      {% for member in group.members %}
-      <div class="participant">
-        <label><input type="checkbox" name="participants" value="{{ member.id }}" checked> {{ member.name }}</label>
-        <input class="share-input" name="share_{{ member.id }}" inputmode="decimal" aria-label="Share for {{ member.name }}">
-      </div>
-      {% endfor %}
-    </fieldset>
-    <p class="hint" id="split-hint"></p>
-    <button type="submit">Add expense</button>
-  </form>
-  {% else %}
-  <p class="muted">Add members to the group before adding expenses.</p>
-  {% endif %}
-</section>
+<div class="stats">
+  <div class="stat reveal"><small>Total spent</small><strong data-money>{{ "%.2f"|format(total_spent) }} PLN</strong></div>
+  <div class="stat reveal"><small>Expenses</small><strong>{{ expenses|length }}</strong></div>
+  <div class="stat reveal"><small>Members</small><strong>{{ group.members|length }}</strong></div>
+</div>
 
-<section class="card">
-  <h2>Expenses</h2>
-  {% if expenses %}
-  <table>
-    <thead>
-      <tr><th>Date</th><th>Description</th><th>Category</th><th>Paid by</th><th>Split</th><th class="amount">Amount</th><th></th></tr>
-    </thead>
-    <tbody>
-      {% for expense in expenses %}
-      <tr>
-        <td>{{ expense.created_at.strftime('%Y-%m-%d') }}</td>
-        <td>{{ expense.description }}</td>
-        <td>{{ expense.category }}</td>
-        <td>{{ expense.payer.name }}</td>
-        <td class="muted">{% for share in expense.shares %}{{ share.person.name }} {{ share.amount }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
-        <td class="amount">{{ expense.amount }} PLN</td>
-        <td>
+<div class="layout">
+  <div>
+    <section class="card reveal">
+      <h2>Balances</h2>
+      <ul class="balances">
+        {% for row in balances %}
+        <li class="balance-row" data-amount="{{ row.amount }}">
+          <span class="avatar" data-avatar="{{ row.person_name }}">{{ row.person_name[:1]|upper }}</span>
+          <span class="balance-name">{{ row.person_name }}</span>
+          <span class="bar"><span class="bar-fill {% if row.amount > 0 %}positive{% elif row.amount < 0 %}negative{% endif %}"></span></span>
+          <span class="money {% if row.amount > 0 %}positive{% elif row.amount < 0 %}negative{% endif %}" data-money>{{ row.amount }} PLN</span>
+        </li>
+        {% endfor %}
+      </ul>
+      <p class="hint">Positive: the group owes this person. Negative: this person owes the group.</p>
+    </section>
+
+    <section class="card reveal">
+      <h2>Settlement</h2>
+      {% if transfers %}
+      <ul class="transfers">
+        {% for transfer in transfers %}
+        <li class="transfer">
+          <span class="avatar sm" data-avatar="{{ transfer.payer_name }}">{{ transfer.payer_name[:1]|upper }}</span>
+          <span class="transfer-text"><strong>{{ transfer.payer_name }}</strong> pays <strong>{{ transfer.receiver_name }}</strong></span>
+          <svg class="transfer-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          <span class="avatar sm" data-avatar="{{ transfer.receiver_name }}">{{ transfer.receiver_name[:1]|upper }}</span>
+          <span class="money" data-money>{{ transfer.amount }} PLN</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="muted">All settled up.</p>
+      {% endif %}
+    </section>
+
+    <section class="card reveal">
+      <h2>Expenses</h2>
+      {% if expenses %}
+      <ul class="expense-list">
+        {% for expense in expenses %}
+        <li class="expense">
+          <span class="avatar" data-avatar="{{ expense.payer.name }}" title="Paid by {{ expense.payer.name }}">{{ expense.payer.name[:1]|upper }}</span>
+          <div>
+            <div class="expense-title">{{ expense.description }}</div>
+            <div class="expense-meta">
+              <span class="tag">{{ expense.category }}</span>
+              <span class="muted">{{ expense.created_at.strftime('%d %b %Y') }} · paid by {{ expense.payer.name }}</span>
+            </div>
+            <div class="share-list">
+              {% for share in expense.shares %}
+              <span class="share-chip">{{ share.person.name }} {{ share.amount }}</span>
+              {% endfor %}
+            </div>
+          </div>
+          <span class="money expense-amount">{{ expense.amount }} PLN</span>
           <form method="post" action="/ui/groups/{{ group.id }}/expenses/{{ expense.id }}/delete" onsubmit="return confirm('Delete this expense?')">
-            <button type="submit" class="danger">Delete</button>
+            <button type="submit" class="icon-btn danger" aria-label="Delete expense">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v5M14 11v5"/></svg>
+            </button>
           </form>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {% else %}
-  <p class="muted">No expenses yet.</p>
-  {% endif %}
-</section>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="muted">No expenses yet.</p>
+      {% endif %}
+    </section>
 
-<section class="card">
-  <h2>Balances</h2>
-  <table>
-    <tbody>
-      {% for row in balances %}
-      <tr>
-        <td>{{ row.person_name }}</td>
-        <td class="amount {% if row.amount > 0 %}positive{% elif row.amount < 0 %}negative{% endif %}">{{ row.amount }} PLN</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  <p class="hint">Positive: the group owes this person. Negative: this person owes the group.</p>
-</section>
+    <div class="danger-zone reveal">
+      <form method="post" action="/ui/groups/{{ group.id }}/delete" onsubmit="return confirm('Delete this group and all its expenses?')">
+        <button type="submit" class="btn btn-danger">Delete group</button>
+      </form>
+    </div>
+  </div>
 
-<section class="card">
-  <h2>Settlement</h2>
-  {% if transfers %}
-  <ul>
-    {% for transfer in transfers %}
-    <li><strong>{{ transfer.payer_name }}</strong> pays <strong>{{ transfer.receiver_name }}</strong> {{ transfer.amount }} PLN</li>
-    {% endfor %}
-  </ul>
-  {% else %}
-  <p class="muted">All settled up.</p>
-  {% endif %}
-</section>
+  <aside class="sidebar">
+    <section class="card reveal">
+      <h2>Add expense</h2>
+      {% if group.members %}
+      <form method="post" action="/ui/groups/{{ group.id }}/expenses" class="stack" id="expense-form">
+        <label>Description
+          <input name="description" required maxlength="200" placeholder="e.g. Hotel">
+        </label>
+        <label>Category
+          <input name="category" value="other" maxlength="50">
+        </label>
+        <label>Amount (PLN)
+          <input name="amount" inputmode="decimal" required placeholder="0.00">
+        </label>
+        <label>Paid by
+          <select name="payer_id">
+            {% for member in group.members %}<option value="{{ member.id }}">{{ member.name }}</option>{% endfor %}
+          </select>
+        </label>
+        <div class="segmented" role="radiogroup" aria-label="Split type">
+          {% for split_type in split_types %}
+          <label>
+            <input type="radio" name="split_type" value="{{ split_type.value }}" {% if loop.first %}checked{% endif %}>
+            <span>{{ split_type.value|capitalize }}</span>
+          </label>
+          {% endfor %}
+        </div>
+        <fieldset>
+          <legend>Participants</legend>
+          {% for member in group.members %}
+          <div class="participant">
+            <label>
+              <input type="checkbox" name="participants" value="{{ member.id }}" checked>
+              <span class="avatar sm" data-avatar="{{ member.name }}">{{ member.name[:1]|upper }}</span>
+              {{ member.name }}
+            </label>
+            <input class="share-input" name="share_{{ member.id }}" inputmode="decimal" aria-label="Share for {{ member.name }}">
+          </div>
+          {% endfor %}
+        </fieldset>
+        <p class="split-summary" id="split-summary"></p>
+        <p class="hint" id="split-hint" style="margin: 0;"></p>
+        <button type="submit" class="btn">Add expense</button>
+      </form>
+      {% else %}
+      <p class="muted">Add members to the group before adding expenses.</p>
+      {% endif %}
+    </section>
 
-<form method="post" action="/ui/groups/{{ group.id }}/delete" onsubmit="return confirm('Delete this group and all its expenses?')">
-  <button type="submit" class="danger">Delete group</button>
-</form>
+    <section class="card reveal">
+      <h2>Members</h2>
+      <ul class="chips">
+        {% for member in group.members %}
+        <li class="chip"><span class="avatar sm" data-avatar="{{ member.name }}">{{ member.name[:1]|upper }}</span>{{ member.name }}</li>
+        {% endfor %}
+      </ul>
+      {% if available_people %}
+      <form method="post" action="/ui/groups/{{ group.id }}/members" class="inline-form">
+        <select name="person_id" aria-label="Person to add">
+          {% for person in available_people %}<option value="{{ person.id }}">{{ person.name }}</option>{% endfor %}
+        </select>
+        <button type="submit" class="btn">Add member</button>
+      </form>
+      {% endif %}
+    </section>
+  </aside>
+</div>
 {% endblock %}
 
 {% block scripts %}<script src="/static/expense-form.js"></script>{% endblock %}
