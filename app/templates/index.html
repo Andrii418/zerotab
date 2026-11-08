@@ -2,10 +2,8 @@
 
 {% block content %}
 <section class="hero reveal">
-  <div>
-    <h1 class="gradient-text">Your groups</h1>
-    <p>Track who paid for what, split it fairly and settle up with the fewest transfers.</p>
-  </div>
+  <h1>Your groups</h1>
+  <p>Track who paid for what, split it fairly and settle up with the fewest transfers.</p>
 </section>
 
 {% if groups %}
@@ -19,7 +17,10 @@
         <span class="avatar sm" data-avatar="{{ member.name }}">{{ member.name[:1]|upper }}</span>
         {% endfor %}
       </span>
-      <span class="muted">{{ group.members|length }} members</span>
+      <span class="muted">{{ group.members|map(attribute='name')|join(', ') }}</span>
+      <span class="go" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </span>
     </div>
   </a>
   {% endfor %}
@@ -34,7 +35,7 @@
 </section>
 {% endif %}
 
-<div class="layout">
+<div class="layout layout-2">
   <section class="card reveal">
     <h2>New group</h2>
     {% if people %}
@@ -61,7 +62,7 @@
   </section>
 
   <section class="card reveal">
-    <h2>People</h2>
+    <h2>People <span class="count">{{ people|length }}</span></h2>
     <form method="post" action="/ui/people" class="inline-form">
       <input name="name" placeholder="Name" required maxlength="100" aria-label="Person name">
       <button type="submit" class="btn">Add person</button>

@@ -23,7 +23,7 @@
     }
     button.addEventListener("click", () => {
       const systemIsDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const current = root.dataset.theme || (systemIsDark ? "dark" : "light");
+      const current = root.dataset.theme || "dark";
       const next = current === "dark" ? "light" : "dark";
       root.dataset.theme = next;
       try {

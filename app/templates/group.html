@@ -4,18 +4,32 @@
 
 {% block content %}
 {% set total_spent = expenses|sum(attribute='amount') %}
+{% set per_person = (total_spent / (group.members|length)) if group.members else 0 %}
 
-<a class="back-link" href="/ui">← All groups</a>
-<h1 class="reveal">{{ group.name }}</h1>
+<div class="page-head reveal">
+  <div>
+    <a class="back-link" href="/ui">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+      All groups
+    </a>
+    <h1>{{ group.name }}</h1>
+  </div>
+  <div class="page-actions">
+    <form method="post" action="/ui/groups/{{ group.id }}/delete" onsubmit="return confirm('Delete this group and all its expenses?')">
+      <button type="submit" class="btn btn-danger btn-sm">Delete group</button>
+    </form>
+  </div>
+</div>
 
 <div class="stats">
-  <div class="stat reveal"><small>Total spent</small><strong data-money>{{ "%.2f"|format(total_spent) }} PLN</strong></div>
+  <div class="stat featured reveal"><small>Total spent</small><strong data-money>{{ "%.2f"|format(total_spent) }} PLN</strong></div>
+  <div class="stat reveal"><small>Per person</small><strong data-money>{{ "%.2f"|format(per_person) }} PLN</strong></div>
   <div class="stat reveal"><small>Expenses</small><strong>{{ expenses|length }}</strong></div>
   <div class="stat reveal"><small>Members</small><strong>{{ group.members|length }}</strong></div>
 </div>
 
 <div class="layout">
-  <div>
+  <div class="col col-summary">
     <section class="card reveal">
       <h2>Balances</h2>
       <ul class="balances">
@@ -28,7 +42,7 @@
         </li>
         {% endfor %}
       </ul>
-      <p class="hint">Positive: the group owes this person. Negative: this person owes the group.</p>
+      <p class="hint">Right of the line: the group owes this person. Left: this person owes the group.</p>
     </section>
 
     <section class="card reveal">
@@ -49,9 +63,11 @@
       <p class="muted">All settled up.</p>
       {% endif %}
     </section>
+  </div>
 
+  <div class="col col-expenses">
     <section class="card reveal">
-      <h2>Expenses</h2>
+      <h2>Expenses <span class="count">{{ expenses|length }}</span></h2>
       {% if expenses %}
       <ul class="expense-list">
         {% for expense in expenses %}
@@ -79,15 +95,9 @@
         {% endfor %}
       </ul>
       {% else %}
-      <p class="muted">No expenses yet.</p>
+      <p class="muted">No expenses yet. Add the first one on the right.</p>
       {% endif %}
     </section>
-
-    <div class="danger-zone reveal">
-      <form method="post" action="/ui/groups/{{ group.id }}/delete" onsubmit="return confirm('Delete this group and all its expenses?')">
-        <button type="submit" class="btn btn-danger">Delete group</button>
-      </form>
-    </div>
   </div>
 
   <aside class="sidebar">
