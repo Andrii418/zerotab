@@ -2,8 +2,8 @@
 
 {% block content %}
 <section class="hero reveal">
-  <h1>Your groups</h1>
-  <p>Track who paid for what, split it fairly and settle up with the fewest transfers.</p>
+  <h1 data-i18n="groups.title">Twoje grupy</h1>
+  <p data-i18n="groups.lead">Notuj, kto za co zapłacił, dziel koszty sprawiedliwie i rozliczaj się jak najmniejszą liczbą przelewów.</p>
 </section>
 
 {% if groups %}
@@ -29,22 +29,22 @@
 <section class="card reveal">
   <div class="empty">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 20h5v-2a4 4 0 0 0-3-3.87M9 20H4v-2a4 4 0 0 1 3-3.87M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M17 8.5a3 3 0 0 1 0 5.5M7 8.5a3 3 0 0 0 0 5.5" opacity=".5"/></svg>
-    <strong>No groups yet</strong>
-    <span class="muted">Add people, then create the first group below.</span>
+    <strong data-i18n="empty.title">Nie ma jeszcze żadnych grup</strong>
+    <span class="muted" data-i18n="empty.text">Dodaj osoby, a potem utwórz pierwszą grupę poniżej.</span>
   </div>
 </section>
 {% endif %}
 
 <div class="layout layout-2">
   <section class="card reveal">
-    <h2>New group</h2>
+    <h2 data-i18n="newGroup.title">Nowa grupa</h2>
     {% if people %}
     <form method="post" action="/ui/groups" class="stack">
-      <label>Group name
-        <input name="name" required maxlength="100" placeholder="e.g. Weekend in the mountains">
+      <label><span data-i18n="newGroup.name">Nazwa grupy</span>
+        <input name="name" required maxlength="100" placeholder="np. Weekend w górach" data-i18n-placeholder="newGroup.placeholder">
       </label>
       <fieldset>
-        <legend>Members</legend>
+        <legend data-i18n="newGroup.members">Członkowie</legend>
         <div class="pill-grid">
           {% for person in people %}
           <label class="pill">
@@ -54,18 +54,18 @@
           {% endfor %}
         </div>
       </fieldset>
-      <button type="submit" class="btn">Create group</button>
+      <button type="submit" class="btn" data-i18n="newGroup.create">Utwórz grupę</button>
     </form>
     {% else %}
-    <p class="muted">Add at least one person first.</p>
+    <p class="muted" data-i18n="newGroup.needPerson">Najpierw dodaj przynajmniej jedną osobę.</p>
     {% endif %}
   </section>
 
   <section class="card reveal">
-    <h2>People <span class="count">{{ people|length }}</span></h2>
+    <h2><span data-i18n="people.title">Osoby</span> <span class="count">{{ people|length }}</span></h2>
     <form method="post" action="/ui/people" class="inline-form">
-      <input name="name" placeholder="Name" required maxlength="100" aria-label="Person name">
-      <button type="submit" class="btn">Add person</button>
+      <input name="name" placeholder="Imię" required maxlength="100" aria-label="Imię osoby" data-i18n-placeholder="people.placeholder" data-i18n-aria="people.aria">
+      <button type="submit" class="btn" data-i18n="people.add">Dodaj osobę</button>
     </form>
     <ul class="chips" style="margin-top: 1rem;">
       {% for person in people %}
