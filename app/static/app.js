@@ -21,17 +21,20 @@
     if (!button) {
       return;
     }
+    const sync = () => {
+      button.setAttribute("aria-checked", String((root.dataset.theme || "dark") === "light"));
+    };
     button.addEventListener("click", () => {
-      const systemIsDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const current = root.dataset.theme || "dark";
-      const next = current === "dark" ? "light" : "dark";
+      const next = (root.dataset.theme || "dark") === "dark" ? "light" : "dark";
       root.dataset.theme = next;
+      sync();
       try {
         localStorage.setItem("zerotab-theme", next);
       } catch (error) {
         return;
       }
     });
+    sync();
   };
 
   const initReveal = () => {
@@ -102,26 +105,12 @@
     }, 250);
   };
 
-  const spawnRipple = (button, event) => {
-    const rect = button.getBoundingClientRect();
-    const ripple = document.createElement("span");
-    ripple.className = "ripple";
-    ripple.style.left = `${event.clientX - rect.left}px`;
-    ripple.style.top = `${event.clientY - rect.top}px`;
-    button.appendChild(ripple);
-    ripple.addEventListener("animationend", () => ripple.remove());
-  };
-
   const dismissAlert = (alert) => {
     alert.classList.add("is-leaving");
     setTimeout(() => alert.remove(), 300);
   };
 
   document.addEventListener("click", (event) => {
-    const button = event.target.closest(".btn");
-    if (button && !prefersReducedMotion) {
-      spawnRipple(button, event);
-    }
     const closeButton = event.target.closest(".alert-close");
     if (closeButton) {
       dismissAlert(closeButton.closest(".alert"));
