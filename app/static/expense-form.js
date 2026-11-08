@@ -4,11 +4,6 @@
     return;
   }
 
-  const HINTS = {
-    equal: "Everyone ticked pays the same amount.",
-    percentage: "Enter each participant's percentage. The total must be 100.",
-    exact: "Enter each participant's amount. The total must equal the expense amount.",
-  };
   const PLACEHOLDERS = { percentage: "%", exact: "PLN" };
 
   const participantBoxes = form.querySelectorAll('input[name="participants"]');
@@ -29,7 +24,7 @@
     const amount = parseNumber(amountInput.value);
     if (split === "equal") {
       const perPerson = activeBoxes.length > 0 ? amount / activeBoxes.length : 0;
-      return { text: `≈ ${perPerson.toFixed(2)} PLN per person`, state: "" };
+      return { text: window.t("summary.perPerson", { value: perPerson.toFixed(2) }), state: "" };
     }
     const sum = activeBoxes.reduce((total, box) => total + parseNumber(shareInputOf(box).value), 0);
     const target = split === "percentage" ? 100 : amount;
@@ -54,10 +49,11 @@
     const { text, state } = describeSummary(split, activeBoxes);
     summary.textContent = text;
     summary.dataset.state = state;
-    hint.textContent = HINTS[split];
+    hint.textContent = window.t(`hint.${split}`);
   };
 
   form.addEventListener("input", refresh);
   form.addEventListener("change", refresh);
+  document.addEventListener("langchange", refresh);
   refresh();
 })();
