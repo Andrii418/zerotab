@@ -192,4 +192,4 @@ Pełne przypadki testowe dla testera manualnego (ID, tytuł, warunki początkowe
 
 ![Strona główna](docs/screenshots/index.png)
 ![Strona grupy](docs/screenshots/group.png)
-![Dokumentacja API](docs/screenshots/swagger.png)
+![Dokumentacja API](docs/screenshots/group2.png)
